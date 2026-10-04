@@ -1,0 +1,1 @@
+curl -s -X POST -H 'Content-Type: application/json' -d '{"input":"$(id)"}' localhost:3000/convert

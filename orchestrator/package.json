@@ -1,0 +1,48 @@
+{
+  "name": "orchestrator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PatchProof orchestrator: Cline SDK agents that scan, exploit, patch and verify a target app.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:deps": "tsx scripts/check-deps.ts",
+    "check:ephemeral": "tsx scripts/check-ephemeral.ts",
+    "check:tools": "tsx scripts/check-tools.ts",
+    "check:scan": "tsx scripts/check-scan.ts",
+    "check:qa": "tsx scripts/check-qa-agent.ts",
+    "check:patch": "tsx scripts/check-patch-agent.ts",
+    "check:proof": "tsx scripts/check-proof.ts",
+    "check:no-llm": "tsx scripts/check-no-llm.ts",
+    "check:pr": "tsx scripts/check-pr.ts",
+    "check:resilience": "tsx scripts/check-resilience.ts",
+    "show:pr": "tsx scripts/show-pr.ts",
+    "smoke:sandbox": "node scripts/sandbox-smoke.mjs"
+  },
+  "dependencies": {
+    "@cline/sdk": "^0.0.90",
+    "@octokit/rest": "^22.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.2",
+    "eslint": "^10.12.0",
+    "eslint-plugin-no-unsanitized": "^4.1.5",
+    "eslint-plugin-security": "^3.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

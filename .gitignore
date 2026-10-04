@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/
+**/dist/
+**/build/
+*.tsbuildinfo
+
+# Vite
+.vite/
+**/.vite/
+
+# Local SQLite databases created by the target app
+*.db
+*.sqlite
+*.sqlite3
+**/data/*.db
+
+# PatchProof runtime artifacts (scan reports, generated exploits, diffs)
+.patchproof/
+**/.patchproof/
+
+session_*/

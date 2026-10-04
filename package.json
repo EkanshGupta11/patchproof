@@ -1,0 +1,21 @@
+{
+  "name": "patchproof",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Confirm vulnerabilities by exploiting them in a sandbox, patch them, and verify the fix by replaying the exploit.",
+  "scripts": {
+    "install:all": "npm --prefix targets/vulnerable-shop install && npm --prefix orchestrator install && npm --prefix sandbox install && npm --prefix dashboard install",
+    "dev:target": "npm --prefix targets/vulnerable-shop run dev",
+    "dev:orchestrator": "npm --prefix orchestrator run dev",
+    "dev:dashboard": "npm --prefix dashboard run dev",
+    "build:orchestrator": "npm --prefix orchestrator run build",
+    "build:dashboard": "npm --prefix dashboard run build",
+    "sandbox:build": "npm --prefix sandbox run build",
+    "sandbox:up": "npm --prefix sandbox run up",
+    "sandbox:down": "npm --prefix sandbox run down",
+    "test:target": "npm --prefix targets/vulnerable-shop test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

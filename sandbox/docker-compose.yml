@@ -1,0 +1,44 @@
+# Minimal PatchProof sandbox.
+#
+# Deliberately different from the earlier compose setup: this image no longer
+# bakes the target app inside it. The target is mounted in as a volume, so the
+# image stays generic and can be pointed at any target under test.
+#
+#   docker compose run --rm sandbox sh /probe.sh   # self-test
+#   docker compose up -d sandbox                   # stay alive for docker exec
+
+name: patchproof
+
+services:
+  sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: patchproof-sandbox:latest
+    container_name: patchproof-sandbox
+
+    # No network at all -- only loopback exists inside the container, so the
+    # target running alongside is reachable but the internet is not.
+    network_mode: "none"
+
+    volumes:
+      # The target under test. Read-only by default so an accidental write from
+      # inside the sandbox cannot corrupt the source tree.
+      - ../targets/vulnerable-shop:/workspace/target:ro
+
+      # This folder's own scripts, so the image stays free of repo-specific files.
+      - ./:/scripts:ro
+
+    # ---- containment ----
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 256
+    read_only: false
+    tmpfs:
+      - /tmp:size=64m
+
+    # Matches the image CMD; explicit so `docker compose run` behaves too.
+    command: ["sleep", "infinity"]
+
+    # Never restart: if the sandbox exits, it should stay gone.
+    restart: "no"

@@ -1,0 +1,557 @@
+/*
+ * PatchProof — terminal / CRT theme.
+ *
+ * Everything here is presentation only: class names, layout, spacing and
+ * behaviour are unchanged from the previous stylesheet. Colours are declared once
+ * as tokens so the palette cannot drift between components.
+ */
+
+:root {
+  /* Near-black, faintly green-shifted like a phosphor screen. */
+  --bg: #05070a;
+  --panel: #080c11;
+  --panel-2: #0b1117;
+  --panel-3: #0e151c;
+
+  --border: #17251f;
+  --border-lit: #22382e;
+
+  --text: #c3d4cc;
+  --muted: #63766d;
+
+  /* Single accent: terminal green. Borders, glows and active states only. */
+  --accent: #33ff99;
+  --accent-dim: #1f9c63;
+
+  /* Status colours only -- never decorative. */
+  --ok: #33ff99;
+  --bad: #ff4d5e;
+  --warn: #ffb020;
+  --idle: #2b3a34;
+
+  font-family: 'JetBrains Mono', ui-monospace, 'Fira Code', SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html { scrollbar-color: var(--border-lit) var(--bg); }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * CRT texture: a fixed overlay carrying fine-grain noise plus faint scanlines.
+ *
+ * Fixed and pointer-events:none so it can never eat a click or a text
+ * selection -- it is decoration over the whole page, not part of it.
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  /* fractalNoise inlined: no extra request, no dependency. */
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.014) 0px,
+      rgba(255, 255, 255, 0.014) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+}
+
+header h1 {
+  margin: 0 0 6px;
+  /* Larger and bolder than the body text, but still monospace. */
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  text-shadow: 0 0 18px rgba(51, 255, 153, .35);
+}
+
+.tagline {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 10px;
+  letter-spacing: .02em;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-ok { background: var(--ok); }
+.dot-bad { background: var(--bad); }
+
+.live { color: var(--ok); }
+
+.bar {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 20px 0 16px;
+}
+
+/*
+ * Buttons are dark with a glowing outline rather than a filled block, so they
+ * read as keycaps. Hover brightens the glow only -- no layout-affecting change.
+ */
+button {
+  background: var(--panel-3);
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  border-radius: 3px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: .02em;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(51, 255, 153, .1), 0 0 10px -4px rgba(51, 255, 153, .35);
+  transition: box-shadow .15s ease, color .15s ease, border-color .15s ease, background .15s ease;
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(51, 255, 153, .45), 0 0 18px -3px rgba(51, 255, 153, .55);
+}
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.field input {
+  width: 60px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  border-radius: 3px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 12px;
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 12px -3px rgba(51, 255, 153, .5);
+}
+
+/*
+ * Status tag rendered as [DONE] / [RUNNING] via pseudo-elements.
+ *
+ * Done in CSS rather than in the components so the markup is untouched -- and so
+ * the underlying text, which is the accessible form of the state, still reads
+ * "done"/"running" without the brackets being announced as part of the word.
+ */
+.pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.pill::before { content: '['; opacity: .45; }
+.pill::after { content: ']'; opacity: .45; }
+.pill-running { color: var(--warn); border-color: rgba(255, 176, 32, .4); }
+.pill-completed { color: var(--ok); border-color: rgba(51, 255, 153, .4); }
+.pill-failed { color: var(--bad); border-color: rgba(255, 77, 94, .4); }
+
+.error {
+  color: var(--bad);
+  font-size: 12px;
+  background: rgba(255, 77, 94, .07);
+  border: 1px solid rgba(255, 77, 94, .3);
+  border-left-width: 2px;
+  border-radius: 3px;
+  padding: 10px 12px;
+}
+
+.counters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+/*
+ * Stat cards: near-black fill, thin glowing border in the status colour, and a
+ * small radius so they stay technical rather than pillowy.
+ */
+.counter {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px 18px;
+  min-width: 108px;
+  box-shadow: inset 0 0 18px -12px rgba(51, 255, 153, .5);
+}
+.counter-good { border-color: rgba(51, 255, 153, .3); box-shadow: 0 0 12px -6px rgba(51, 255, 153, .6); }
+.counter-bad  { border-color: rgba(255, 77, 94, .3); box-shadow: 0 0 12px -6px rgba(255, 77, 94, .5); }
+
+/*
+ * The value glows only while it changes: React keys this element by the value, so
+ * a change remounts it and restarts the one-shot animation below. An unchanged
+ * value never re-mounts, so a static card sits still.
+ */
+.counter-value {
+  font-size: 24px;
+  font-weight: 700;
+  display: block;
+  animation: value-tick .5s ease-out;
+}
+.counter-good .counter-value { color: var(--ok); }
+.counter-bad .counter-value { color: var(--bad); }
+
+@keyframes value-tick {
+  0%   { text-shadow: 0 0 14px currentColor; filter: brightness(1.5); }
+  100% { text-shadow: 0 0 0 transparent; filter: brightness(1); }
+}
+
+.counter-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+.panel {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 16px;
+  /* Terminal window: blurred backdrop over the page texture. */
+  backdrop-filter: blur(6px);
+}
+.panel h2 {
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* Faint scanlines confined to the panel, so panels read as windows on the page. */
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 4px;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.012) 0px,
+    rgba(255, 255, 255, 0.012) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+.panel > * { position: relative; }
+
+/* ---------- finding rows ---------- */
+
+.finding-row {
+  position: relative;
+  border: 1px solid var(--border);
+  /* Thin glowing left border in the current status colour. */
+  border-left: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: var(--panel-2);
+  backdrop-filter: blur(4px);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.finding-confirmed {
+  border-left-color: var(--bad);
+  box-shadow: -3px 0 14px -6px rgba(255, 77, 94, .8);
+}
+.finding-verified {
+  border-left-color: var(--ok);
+  box-shadow: -3px 0 14px -6px rgba(51, 255, 153, .8);
+}
+
+/* Per-row scanlines, so each finding reads as its own terminal window. */
+.finding-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 4px;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.01) 0px,
+    rgba(255, 255, 255, 0.01) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+.finding-row > * { position: relative; }
+
+.finding-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.finding-class { font-weight: 600; font-size: 14px; color: var(--accent); }
+.finding-id, .finding-location, .finding-rule {
+  font-size: 12px;
+  color: var(--muted);
+}
+.finding-rule { opacity: .7; }
+
+.sev {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 1px 7px;
+  border-radius: 2px;
+  /* Outlined rather than filled, to match the rest of the terminal look. */
+  background: transparent;
+  border: 1px solid currentColor;
+  color: var(--idle);
+}
+.sev-critical { color: var(--bad); }
+.sev-high { color: #ff8c42; }
+.sev-medium { color: var(--warn); }
+
+.finding-phases {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.phase-cell {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 10px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/*
+ * Circuit-trace connector: a dashed line running from this cell to the next.
+ *
+ * Drawn from the cell's own right edge across the grid gap, so it needs no extra
+ * markup and disappears entirely on the last cell.
+ */
+.phase-cell:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 8px;
+  height: 1px;
+  border-top: 1px dashed var(--border-lit);
+}
+
+.phase-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--faint);
+}
+
+/* [DONE] / [RUNNING], bracketed via pseudo-elements. See the .pill comment. */
+.phase-state {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  word-break: break-word;
+}
+.phase-state::before { content: '['; opacity: .4; }
+.phase-state::after { content: ']'; opacity: .4; }
+
+.phase-detail { font-size: 11px; color: var(--muted); }
+
+/* Colour states: idle, in-flight, confirmed (red), verified (green). */
+.phase-pending, .phase-unknown { color: var(--idle); }
+.phase-done { color: var(--muted); }
+.phase-running { color: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.phase-confirmed, .phase-regression, .phase-failed { color: var(--bad); border-color: rgba(255, 77, 94, .45); }
+.phase-rejected { color: var(--muted); }
+.phase-proposed, .phase-running.phase-patch { color: var(--warn); border-color: rgba(255, 176, 32, .45); }
+.phase-verified { color: var(--ok); border-color: rgba(51, 255, 153, .45); }
+.phase-functional-break, .phase-inconclusive { color: var(--warn); border-color: rgba(255, 176, 32, .45); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.finding-summary {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.finding-actions { margin-top: 10px; }
+
+/* Dark with a glowing green outline rather than a solid fill. */
+button.approve {
+  background: var(--panel-3);
+  color: var(--ok);
+  border: 1px solid var(--ok);
+  padding: 7px 14px;
+  font-size: 12px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(51, 255, 153, .18), 0 0 12px -4px rgba(51, 255, 153, .5);
+  transition: box-shadow .15s ease, background .15s ease;
+}
+button.approve:hover:not(:disabled) {
+  background: rgba(51, 255, 153, .08);
+  box-shadow: 0 0 0 1px rgba(51, 255, 153, .5), 0 0 20px -2px rgba(51, 255, 153, .75);
+}
+
+.approved-flag { color: var(--ok); font-size: 12px; font-weight: 600; }
+.approve-hint { color: var(--muted); font-size: 12px; }
+
+/* ---------- event log: a real terminal ---------- */
+
+.events {
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 12px;
+  /* Prompts, so the log reads as a console. */
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 0;
+  scrollbar-width: thin;
+}
+
+.event {
+  display: flex;
+  gap: 10px;
+  padding: 3px 12px;
+  /* Left border carries the event's phase colour -- see the :has() rules below. */
+  border-left: 2px solid transparent;
+  /* Each newly arrived line fades in; keyed by React so it plays on arrival. */
+  animation: line-in .18s ease-out;
+}
+
+@keyframes line-in {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.event-phase { color: var(--accent); min-width: 148px; }
+.event-time { color: var(--faint); min-width: 68px; }
+.event-message { flex: 1; word-break: break-word; color: var(--text); }
+
+/*
+ * Colour the left border by event type.
+ *
+ * The phase class lives on a child (.event-phase), so :has() is what lets the
+ * parent's border follow it without moving the class in the markup.
+ */
+.event:has(.phase-scan)    { border-left-color: var(--accent-dim); }
+.event:has(.phase-exploit) { border-left-color: var(--warn); }
+.event:has(.phase-patch)   { border-left-color: var(--warn); }
+.event:has(.phase-verify)  { border-left-color: var(--ok); }
+.event:has(.phase-approval){ border-left-color: var(--ok); }
+.event:has(.phase-run)     { border-left-color: var(--muted); }
+
+.meta { color: var(--muted); font-size: 12px; }
+
+/* ---- repo field ---------------------------------------------------------- */
+
+/* Its own row rather than joining the Start run bar: this is PR configuration,
+   not a run control, and mixing the two made both harder to scan. */
+.repo-bar {
+  margin: -6px 0 16px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.repo-field input {
+  width: 300px;
+  font-size: 12px;
+}
+
+/* Modifier on the existing .meta, rather than new colours: keeps the palette in
+   one place instead of re-deriving "what is muted but alarming" per component. */
+.meta.ok { color: var(--ok); }
+.meta.bad { color: var(--bad); }
+.meta.warn { color: var(--warn); }
+
+.meta code {
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1px 5px;
+}
+
+.tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  background: rgba(51, 255, 153, .06);
+}
+
+/* Respect a stated preference for reduced motion: the pulsing phase state, the
+   value tick and the per-line fade are all decorative. */
+@media (prefers-reduced-motion: reduce) {
+  .counter-value,
+  .event,
+  .phase-running {
+    animation: none;
+  }
+  button,
+  .finding-row {
+    transition: none;
+  }
+}

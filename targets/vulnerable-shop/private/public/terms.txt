@@ -1,0 +1,7 @@
+Vulnerable Shop — Terms of Service
+==================================
+
+1. This application is intentionally insecure and exists for security demos.
+2. Do not deploy it to any network you do not fully control.
+3. All products, users and orders are fabricated sample data.
+4. There is no warranty of any kind, express or implied.

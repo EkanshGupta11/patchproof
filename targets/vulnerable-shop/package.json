@@ -1,0 +1,19 @@
+{
+  "name": "vulnerable-shop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Intentionally vulnerable Express shop used as a PatchProof target. DO NOT DEPLOY.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

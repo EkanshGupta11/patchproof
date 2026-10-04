@@ -1,0 +1,16 @@
+{
+  "name": "patchproof-sandbox",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal, network-less Docker sandbox used to run exploits against the target app.",
+  "scripts": {
+    "build": "docker build -t patchproof-sandbox:latest -f Dockerfile .",
+    "up": "docker compose up -d --build",
+    "down": "docker compose down -v",
+    "test": "docker compose run --rm sandbox sh /probe.sh",
+    "shell": "docker compose exec sandbox sh",
+    "ps": "docker compose ps",
+    "target:start": "docker compose exec -d sandbox sh -c \"cd /workspace/target && node src/server.js\"",
+    "target:stop": "docker compose exec sandbox sh -c \"pkill -f 'node src/server.js' || true\""
+  }
+}

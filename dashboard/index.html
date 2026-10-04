@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PatchProof — prove it, don't guess it</title>
+
+    <!--
+      Terminal typeface. Loaded with a swap so the page renders immediately in
+      the local monospace fallback if Google Fonts is slow or blocked; the
+      stylesheet lists JetBrains Mono first and ui-monospace second, so the
+      fallback is still a monospace face rather than the system sans.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

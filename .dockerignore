@@ -1,0 +1,26 @@
+# Ignore everything heavy when building the sandbox image.
+# The build context is the repo root, so without this Docker would ship every
+# node_modules tree to the daemon.
+
+**/node_modules
+**/dist
+**/build
+**/.vite
+
+# VCS + tooling
+**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+
+# Secrets must never enter an image
+**/.env
+**/.env.*
+!**/.env.example
+
+# PatchProof runtime artifacts
+**/.patchproof
+**/*.log
+
+# The dashboard is not part of the sandbox image
+dashboard/
